@@ -1,0 +1,125 @@
+<html>
+  <head>
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/public/favicon.ico" rel="shortcut icon">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+  <style>
+    button {
+	border: none;
+	border-radius: 3px;
+	padding: 10px;
+	background:#C0C0C0;
+	color:#f1f1f1; 
+    }
+    button:hover {
+	background:#808080;
+	color:#f1f1f1; 
+    }
+    button:active {
+	background:#696969;
+	color:#f1f1f1;
+    }
+    #tiny-description {
+	padding:25px;
+    }
+    #tiny-url {
+	font-size: 75px;
+    }
+    #tiny-url a {
+	color:#696969;
+    }
+  </style>
+  <body>
+    <div class="row">
+      <div class="col-xs-1 d-flex text-center align-items-center justify-content-center">
+	<p id="tiny-description"><a href="https://yvanscher.com/writing/why_i_made_tinywhack" target="_blank">I</a> made <b>tinywhack.com</b> to let you explore random urls on tinyurl.com.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-1 d-flex text-center align-items-center justify-content-center">
+	<p id="tiny-url">tinyurl.com/*****</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-1 d-flex text-center align-items-center justify-content-center">
+	<button class="whack-btn">whack a url!</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    
+    var letters = [];
+    var numbers = [];
+    for (let i = 65; i < 91; i++) {
+	letters.push(String.fromCharCode(i))
+    }
+    for (let i = 97; i < 123; i++) {
+	letters.push(String.fromCharCode(i))
+    }
+    for (let i = 0; i < 10; i++) {
+	numbers.push(i)
+    }
+    
+    function getRand(ary) {
+	return ary[Math.floor(Math.random()*ary.length)]
+    }
+
+    function makeUrl() {
+	var urlMeat = "";
+	for (let i = 0; i < 5; i++) {
+	    if (Math.round(Math.random())) {
+		urlMeat += getRand(letters)
+	    } else{
+		urlMeat += getRand(numbers)
+	    }
+	}
+	return urlMeat
+    }
+    
+    function registerUrl(url, statuscode) {
+	var data = JSON.stringify({"url":url,"status":statuscode})
+	$.ajax({
+	    type:"POST",
+	    url:"/register_url",
+	    contentType:'application/json',
+	    data: data/*,
+	    success:function(response){
+		//
+	    },
+	    error:function(error){
+		//
+	    }*/
+	})
+    }
+    
+    $(document).ready(function(){
+	$('.whack-btn').click(function(){
+	    var getUrl = 'https://tinyurl.com/'+makeUrl()
+	    var simpleUrl = getUrl.replace("https://","")
+	    
+	    
+	    $.ajax({
+		url: getUrl,
+		type: "HEAD",
+		success: function(result){		   
+		    $("#tiny-url").html(`<a href="${getUrl}" target="_blank">${simpleUrl}</a>`)
+		    registerUrl(getUrl, result.status)
+		},
+		error: function(error){
+		    if (error.status == 404) {
+			$("#tiny-url").html(`<a href="${getUrl}" target="_blank">${simpleUrl}</a> is empty`)
+		    } else {
+			if (error.status == 0) {
+			    
+			}
+			$("#tiny-url").html(`<a href="${getUrl}" target="_blank">${simpleUrl}</a>`)
+		    }
+		    registerUrl(getUrl, error.status)
+		}
+	    })
+	    
+	})
+    })
+    </script>
+</html>
